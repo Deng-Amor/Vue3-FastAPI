@@ -1178,3 +1178,90 @@ RETURN pg_catalog.array_to_string(tokens[indexnum:length], $2);
 END IF;
 END;
 $$ IMMUTABLE STRICT LANGUAGE PLPGSQL;
+
+-- ----------------------------
+-- AIGC 素材库表
+-- ----------------------------
+drop table if exists aigc_material;
+create table aigc_material (
+    material_id bigserial primary key,
+    material_name varchar(100) not null,
+    material_type varchar(20) not null,
+    material_url varchar(500) not null,
+    cover_url varchar(500),
+    tags json,
+    remark varchar(500),
+    user_id bigint,
+    create_by varchar(64) default '',
+    create_time timestamp default current_timestamp,
+    update_by varchar(64) default '',
+    update_time timestamp default current_timestamp
+);
+
+comment on table aigc_material is 'AIGC素材库表';
+comment on column aigc_material.material_id is '素材ID';
+comment on column aigc_material.material_name is '素材名称';
+comment on column aigc_material.material_type is '素材类型 model/clothes/action/scene';
+comment on column aigc_material.material_url is '素材URL';
+comment on column aigc_material.cover_url is '封面URL';
+comment on column aigc_material.tags is '标签';
+comment on column aigc_material.remark is '备注';
+comment on column aigc_material.user_id is '用户ID';
+
+-- ----------------------------
+-- AIGC 视频生成工作流表
+-- ----------------------------
+drop table if exists aigc_video_workflow;
+create table aigc_video_workflow (
+    workflow_id bigserial primary key,
+    workflow_name varchar(100) not null,
+    status varchar(20) not null default 'draft',
+    current_node varchar(50) not null default 'start',
+    image varchar(500),
+    image1 varchar(500),
+    key varchar(500),
+    video varchar(500),
+    ratio varchar(20) default '9:16',
+    merged_images json,
+    prompt text,
+    render_img varchar(500),
+    action_video varchar(500),
+    final_video varchar(500),
+    clean_result json,
+    node_snapshots json,
+    rollback_count int not null default 0,
+    error_message varchar(1000),
+    del_flag char(1) not null default '0',
+    user_id bigint,
+    create_by varchar(64) default '',
+    create_time timestamp default current_timestamp,
+    update_by varchar(64) default '',
+    update_time timestamp default current_timestamp
+);
+
+comment on table aigc_video_workflow is 'AIGC视频生成工作流表';
+comment on column aigc_video_workflow.workflow_id is '工作流ID';
+comment on column aigc_video_workflow.workflow_name is '工作流名称';
+comment on column aigc_video_workflow.status is '状态';
+comment on column aigc_video_workflow.current_node is '当前节点';
+comment on column aigc_video_workflow.image is '服装/商品参考图';
+comment on column aigc_video_workflow.image1 is '模特参考图';
+comment on column aigc_video_workflow.key is '剪映/生成密钥';
+comment on column aigc_video_workflow.video is '动作参考视频';
+comment on column aigc_video_workflow.ratio is '画面比例';
+comment on column aigc_video_workflow.merged_images is '组合图片数组';
+comment on column aigc_video_workflow.prompt is '生成提示词';
+comment on column aigc_video_workflow.render_img is '生图结果';
+comment on column aigc_video_workflow.action_video is '动作模仿视频';
+comment on column aigc_video_workflow.final_video is '最终视频';
+comment on column aigc_video_workflow.clean_result is '后置清理结果';
+comment on column aigc_video_workflow.node_snapshots is '节点快照';
+comment on column aigc_video_workflow.rollback_count is '回滚次数';
+comment on column aigc_video_workflow.error_message is '错误信息';
+
+-- ----------------------------
+-- AIGC 菜单
+-- ----------------------------
+insert into sys_menu values(1200, 'AIGC管理', 0, '5', 'aigc', null, '', '', 1, 0, 'M', '0', '0', '', 'magic-stick', 'admin', current_timestamp, '', null, 'AIGC管理目录');
+insert into sys_menu values(1204, '素材库', 1200, '1', 'material-library', 'aigc/material-library/index', '', '', 1, 0, 'C', '0', '0', 'aigc:material:list', 'folder', 'admin', current_timestamp, '', null, 'AIGC素材库菜单');
+insert into sys_menu values(1203, '视频生成工作流', 1200, '2', 'video-workflow', 'aigc/video-workflow/index', '', '', 1, 0, 'C', '0', '0', 'aigc:videoWorkflow:list', 'video-play', 'admin', current_timestamp, '', null, 'AIGC视频生成工作流菜单');

@@ -56,7 +56,7 @@ class ProjectRuntimeLocator:
         :return: 仅保留程序名和 `--env` 的参数列表
         """
         current_argv = argv or sys.argv
-        program_name = current_argv[0] if current_argv else 'ruoyi'
+        program_name = current_argv[0] if current_argv else 'cs'
         import_argv = [program_name]
         env_value = ''
         current_args = current_argv[1:]
@@ -328,7 +328,7 @@ class CliApplicationBuilder:
         :return: Typer 根应用
         """
         cli = typer.Typer(
-            name='ruoyi',
+            name='cs',
             help='RuoYi FastAPI 后端统一命令入口',
             no_args_is_help=True,
             add_completion=False,

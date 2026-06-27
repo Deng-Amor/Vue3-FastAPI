@@ -74,7 +74,7 @@ class CliMainRunner:
         """
         cli = self.build_cli()
         self.completion_dispatcher.dispatch(cli)
-        cli(prog_name='ruoyi')
+        cli(prog_name='cs')
 
 
 CLI_APPLICATION_BUILDER = CliApplicationBuilder(output_renderer=DEFAULT_CORE_SERVICES.output_renderer)

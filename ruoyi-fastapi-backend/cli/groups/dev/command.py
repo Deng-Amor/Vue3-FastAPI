@@ -3,15 +3,23 @@ from typing import Annotated
 import typer
 
 from cli.context import EnvOption, OutputOption
+from cli.groups.app.controller import AppCommandController
 
 from .controller import DevCommandController
 
 app = typer.Typer(
     help='开发相关命令',
-    no_args_is_help=True,
+    no_args_is_help=False,
     context_settings={'help_option_names': ['-h', '--help']},
 )
+_APP_COMMAND_CONTROLLER = AppCommandController()
 _DEV_COMMAND_CONTROLLER = DevCommandController()
+
+
+@app.callback(invoke_without_command=True)
+def dev(ctx: typer.Context) -> None:
+    if ctx.invoked_subcommand is None:
+        _APP_COMMAND_CONTROLLER.run_app('dev')
 
 
 @app.command('lint', help='执行 Ruff 格式化与静态检查')
