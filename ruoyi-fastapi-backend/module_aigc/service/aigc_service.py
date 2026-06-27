@@ -12,12 +12,16 @@ ROLLBACK_NODES = ['merge_image', 'gen_prompt', 'gen_img', 'mimic_action', 'gen_v
 
 
 class AigcService:
+    """AIGC业务服务，负责参数校验、事务提交和工作流状态流转。"""
+
     @classmethod
     async def list_materials(cls, db: AsyncSession, material_type: str | None = None) -> list[dict]:
+        """查询素材列表，可按素材类型过滤。"""
         return CamelCaseUtil.transform_result(await AigcDao.list_materials(db, material_type))
 
     @classmethod
     async def add_material(cls, db: AsyncSession, material: AigcMaterialModel) -> dict:
+        """新增一个素材库素材。"""
         if not material.material_name or not material.material_type or not material.material_url:
             raise ServiceException(message='素材名称、类型、URL不能为空')
         db_material = await AigcDao.add_material(db, material)
@@ -26,16 +30,19 @@ class AigcService:
 
     @classmethod
     async def delete_materials(cls, db: AsyncSession, material_ids: str) -> None:
+        """按逗号分隔的ID批量删除素材。"""
         ids = [int(item) for item in material_ids.split(',') if item]
         await AigcDao.delete_materials(db, ids)
         await db.commit()
 
     @classmethod
     async def list_workflows(cls, db: AsyncSession) -> list[dict]:
+        """查询视频生成工作流列表。"""
         return CamelCaseUtil.transform_result(await AigcDao.list_workflows(db))
 
     @classmethod
     async def get_workflow(cls, db: AsyncSession, workflow_id: int) -> dict:
+        """查询单个视频生成工作流详情。"""
         workflow = await AigcDao.get_workflow(db, workflow_id)
         if not workflow:
             raise ServiceException(message='工作流不存在')
@@ -43,6 +50,7 @@ class AigcService:
 
     @classmethod
     async def add_workflow(cls, db: AsyncSession, workflow: AigcWorkflowModel) -> dict:
+        """创建一个待执行的视频生成工作流。"""
         if not workflow.workflow_name:
             raise ServiceException(message='工作流名称不能为空')
         workflow.status = 'draft'
@@ -56,6 +64,7 @@ class AigcService:
 
     @classmethod
     async def run_workflow(cls, db: AsyncSession, workflow_id: int, user_name: str = '') -> dict:
+        """执行LangGraph工作流，并把每个节点的结果持久化到数据库。"""
         workflow = await AigcDao.get_workflow(db, workflow_id)
         if not workflow:
             raise ServiceException(message='工作流不存在')
@@ -98,6 +107,7 @@ class AigcService:
 
     @classmethod
     async def rollback_workflow(cls, db: AsyncSession, workflow_id: int, target_node: str, user_name: str = '') -> dict:
+        """回滚到指定节点快照，并清理该节点之后的快照数据。"""
         workflow = await AigcDao.get_workflow(db, workflow_id)
         if not workflow:
             raise ServiceException(message='工作流不存在')
@@ -127,4 +137,3 @@ class AigcService:
         await AigcDao.update_workflow(db, update_data)
         await db.commit()
         return await cls.get_workflow(db, workflow_id)
-

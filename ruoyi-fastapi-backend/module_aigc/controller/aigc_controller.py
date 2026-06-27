@@ -21,6 +21,7 @@ async def list_materials(
     query_db: Annotated[AsyncSession, DBSessionDependency()],
     material_type: Annotated[str | None, Query(alias='materialType')] = None,
 ) -> Response:
+    """获取素材库列表。"""
     return ResponseUtil.success(data=await AigcService.list_materials(query_db, material_type))
 
 
@@ -31,6 +32,7 @@ async def add_material(
     query_db: Annotated[AsyncSession, DBSessionDependency()],
     current_user: Annotated[CurrentUserModel, CurrentUserDependency()],
 ) -> Response:
+    """新增素材库记录。"""
     material.user_id = current_user.user.user_id
     material.create_by = current_user.user.user_name
     material.update_by = current_user.user.user_name
@@ -43,12 +45,14 @@ async def delete_materials(
     material_ids: Annotated[str, Path()],
     query_db: Annotated[AsyncSession, DBSessionDependency()],
 ) -> Response:
+    """删除一个或多个素材库记录。"""
     await AigcService.delete_materials(query_db, material_ids)
     return ResponseUtil.success(msg='删除成功')
 
 
 @aigc_controller.get('/workflow/list', response_model=DataResponseModel[list[AigcWorkflowModel]])
 async def list_workflows(request: Request, query_db: Annotated[AsyncSession, DBSessionDependency()]) -> Response:
+    """获取视频生成工作流列表。"""
     return ResponseUtil.success(data=await AigcService.list_workflows(query_db))
 
 
@@ -58,6 +62,7 @@ async def get_workflow(
     workflow_id: Annotated[int, Path()],
     query_db: Annotated[AsyncSession, DBSessionDependency()],
 ) -> Response:
+    """获取视频生成工作流详情。"""
     return ResponseUtil.success(data=await AigcService.get_workflow(query_db, workflow_id))
 
 
@@ -68,6 +73,7 @@ async def add_workflow(
     query_db: Annotated[AsyncSession, DBSessionDependency()],
     current_user: Annotated[CurrentUserModel, CurrentUserDependency()],
 ) -> Response:
+    """创建视频生成工作流。"""
     workflow.user_id = current_user.user.user_id
     workflow.create_by = current_user.user.user_name
     workflow.update_by = current_user.user.user_name
@@ -81,6 +87,7 @@ async def run_workflow(
     query_db: Annotated[AsyncSession, DBSessionDependency()],
     current_user: Annotated[CurrentUserModel, CurrentUserDependency()],
 ) -> Response:
+    """执行视频生成工作流。"""
     return ResponseUtil.success(data=await AigcService.run_workflow(query_db, workflow_id, current_user.user.user_name))
 
 
@@ -92,9 +99,9 @@ async def rollback_workflow(
     query_db: Annotated[AsyncSession, DBSessionDependency()],
     current_user: Annotated[CurrentUserModel, CurrentUserDependency()],
 ) -> Response:
+    """按节点快照回滚视频生成工作流。"""
     return ResponseUtil.success(
         data=await AigcService.rollback_workflow(
             query_db, workflow_id, rollback.target_node, current_user.user.user_name
         )
     )
-
